@@ -12,14 +12,15 @@ fn main() {
     let commit_hash: &String = &args[1];
     println!("Commit hash: {commit_hash}");
 
+    let files_with_path_new: Vec<String>;
     match find_sol_files_recursive("src") {
         Ok(files) => {
-            for file in files {
-                println!("{}", file);
-            }
-        }
+            files_with_path_new = files;
+            println!("files_with_path_new sol files: {:?}", files_with_path_new);
+        },
         Err(err) => {
             println!("Error: {}", err);
+            return;
         }
     }
 }
