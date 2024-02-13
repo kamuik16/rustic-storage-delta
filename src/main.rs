@@ -13,7 +13,7 @@ fn main() {
 
     // CLONE OLD VERSION
     let repo_url: &String = &args[1];
-    let output_dir = "rustic-storage-delta-main";
+    let main_path = "rustic-storage-delta-main";
     let cache_path = "rustic-storage-delta-cache";
     if fs::metadata(&cache_path).is_ok() {
         println!("rustic-storage-delta-cache already exists!");
@@ -50,9 +50,13 @@ fn main() {
         }
     }
 
-    match fs::create_dir_all(&output_dir) {
-        Ok(_) => println!("Created rustic-storage-delta-main directory!"),
-        Err(err) => println!("Error creating rustic-storage-delta-main directory: {}", err),
+    if fs::metadata(&main_path).is_ok() {
+        println!("rustic-storage-delta-main already exists!");
+    } else {
+        match fs::create_dir_all(&main_path) {
+            Ok(_) => println!("Created  directory!"),
+            Err(err) => println!("Error creating rustic-storage-delta-main directory: {}", err),
+        }
     }
 
     // REPORT DELETED ONES
