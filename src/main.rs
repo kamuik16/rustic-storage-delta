@@ -13,6 +13,7 @@ fn main() {
 
     // CLONE OLD VERSION
     let repo_url: &String = &args[1];
+    let output_dir = "rustic-storage-delta-main";
     let cache_path = "rustic-storage-delta-cache";
     if fs::metadata(&cache_path).is_ok() {
         println!("rustic-storage-delta-cache already exists!");
@@ -49,13 +50,18 @@ fn main() {
         }
     }
 
+    match fs::create_dir_all(&output_dir) {
+        Ok(_) => println!("Created rustic-storage-delta-main directory!"),
+        Err(err) => println!("Error creating rustic-storage-delta-main directory: {}", err),
+    }
+
     // REPORT DELETED ONES
     let mut differences: Vec<String> = vec![];
     for file_path in &files_with_path_old {
-        if !files_with_path_new.contains(&file_path) {
+        if !files_with_path_new.contains(file_path) {
             differences.push(file_path.to_string());
-            match fs::write("rustic-storage-delta-cache/.removed", file_path.to_string()) {
-                Ok(_) => println!("Uh-oh! Looks like some files are missing!"),
+            match fs::write("rustic-storage-delta-main/.removed", file_path.to_string()) {
+                Ok(_) => println!("Uh-oh! Looks like some files are deleted!"),
                 Err(err) => println!("Error writing to file: {}", err),
             }
         }
