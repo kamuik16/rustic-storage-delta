@@ -1,4 +1,4 @@
-use std::{env, fs};
+use std::{env, fs, str, path::Path, process::Command};
 use git2::Repository;
 
 fn main() {
@@ -28,7 +28,7 @@ fn main() {
     let files_with_path_old: Vec<String>;
     let files_with_path_new: Vec<String>;
 
-    // Call the function to find .sol files in the old version directory
+    // Find .sol files in the old version directory
     match find_sol_files_recursive("rustic-storage-delta-cache/src") {
         Ok(files) => {
             files_with_path_old = files;
@@ -40,7 +40,7 @@ fn main() {
         }
     }
 
-    // Call the function to find .sol files in the new version directory
+    // Find .sol files in the new version directory
     match find_sol_files_recursive("src") {
         Ok(files) => {
             files_with_path_new = files;
@@ -66,11 +66,8 @@ fn main() {
     // REPORT DELETED FILES
 
     // Check and delete the .removed file if it already exists
-    match fs::metadata("rustic-storage-delta-main/.removed") {
-        Ok(_) => {
-            fs::remove_file("rustic-storage-delta-main/.removed")
-            .expect("Failed to delete .removed file");
-        },
+    match fs::remove_file("rustic-storage-delta-main/.removed") {
+        Ok(_) => println!(".removed file deleted successfully!"),
         Err(_) => (),
     }
 
@@ -84,6 +81,42 @@ fn main() {
                 Ok(_) => println!("Deleted file: {}", file_path),
                 Err(err) => println!("Error writing to .removed file: {}", err),
             }
+        }
+    }
+
+    for file in &files_with_path_old {
+        let contract_name = Path::new(file).file_stem().unwrap().to_str().unwrap();
+
+        // Run the 'forge inspect' command in the old directory
+        let output_old = Command::new("forge")
+            .current_dir("rustic-storage-delta-cache/src/")
+            .args(["inspect", contract_name, "storage"])
+            .output()
+            .expect("Failed to run forge inspect!");
+
+        // Run the 'forge inspect' command in the new directory
+        let output_new = Command::new("forge")
+            .current_dir("src/")
+            .args(["inspect", contract_name, "storage"])
+            .output()
+            .expect("Failed to run forge inspect!");
+
+        // Run the node script
+        let node_script_status = Command::new("node")
+            .arg("./lib/rustic-storage-delta/_reporter.js")
+            .arg(str::from_utf8(&output_old.stdout).unwrap())
+            .arg(str::from_utf8(&output_new.stdout).unwrap())
+            .arg(file)
+            .arg("0")
+            .status()
+            .expect("Failed to execute node script!");
+
+        // Check the status of the Node.js script
+        if node_script_status.success() {
+            println!("Node script ran successfully!");
+        } else {
+            let node_script_status_err = format!("Node script failed: {}", node_script_status);
+            println!("{}", node_script_status_err);
         }
     }
 }
