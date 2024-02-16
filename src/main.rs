@@ -18,10 +18,24 @@ fn main() {
         println!("Cache directory already exists!");
     } else {
         // Clone the repository if the cache directory doesn't exist
-        let _repo = match Repository::clone(&args[1], cache_path) {
+        let _repo = match Repository::clone(&args[1], &cache_path) {
             Ok(repo) => repo,
             Err(e) => panic!("Failed to clone: {}", e),
         };
+
+        // Run forge install command
+        if Command::new("forge")
+        .current_dir(&cache_path)
+        .arg("install")
+        .status()
+        .expect("Failed to run forge install!")
+        .success() 
+        {
+            println!("forge install successful!");
+        } else 
+        {
+            println!("forge install failed!");
+        }
     }
 
     // Declare vectors to store the .sol file names
@@ -72,16 +86,20 @@ fn main() {
     }
 
     let mut deleted_files: Vec<String> = vec![];
+    let mut deleted_content = String::new();
+
     for file_path in &files_with_path_old {
         // Check for deleted files
         if !files_with_path_new.contains(file_path) {
             deleted_files.push(file_path.to_string());
-            // Write deleted file names to a file
-            match fs::write("rustic-storage-delta-main/.removed", file_path.to_string() + "\n") {
-                Ok(_) => println!("Deleted file: {}", file_path),
-                Err(err) => println!("Error writing to .removed file: {}", err),
-            }
+            deleted_content.push_str(file_path);
+            deleted_content.push('\n');
         }
+    }
+    // Write deleted file names to .removed file
+    match fs::write("rustic-storage-delta-main/.removed", &deleted_content) {
+        Ok(_) => (),
+        Err(err) => println!("Error writing to .removed file: {}", err),
     }
 
     for file in &files_with_path_old {
@@ -90,14 +108,14 @@ fn main() {
         // Run the 'forge inspect' command in the old directory
         let output_old = Command::new("forge")
             .current_dir("rustic-storage-delta-cache/src/")
-            .args(["inspect", contract_name, "storage"])
+            .args(["inspect", &contract_name, "storage"])
             .output()
             .expect("Failed to run forge inspect!");
 
         // Run the 'forge inspect' command in the new directory
         let output_new = Command::new("forge")
             .current_dir("src/")
-            .args(["inspect", contract_name, "storage"])
+            .args(["inspect", &contract_name, "storage"])
             .output()
             .expect("Failed to run forge inspect!");
 
