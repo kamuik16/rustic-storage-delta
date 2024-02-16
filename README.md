@@ -6,7 +6,7 @@
 
 ## Install
 
-1. **Navigate to your project directory.**
+1. **Navigate to your `Foundry` project directory.**
 
 2. **In your project directory, navigate to the `lib` folder:**
 
