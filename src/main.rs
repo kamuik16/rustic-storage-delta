@@ -103,6 +103,12 @@ fn main() {
     }
 
     for file in &files_with_path_old {
+        // Skip if the file has been deleted
+        if deleted_files.contains(file) {
+            println!("Skipping node script execution for deleted file: {}", file);
+            continue;
+        }
+
         let contract_name = Path::new(file).file_stem().unwrap().to_str().unwrap();
 
         // Run the 'forge inspect' command in the old directory
