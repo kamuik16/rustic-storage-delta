@@ -1,5 +1,5 @@
-use std::{env, fs, str, path::Path, process::Command};
 use git2::Repository;
+use std::{env, fs, path::Path, process::Command, str};
 
 fn main() {
     // Check if the repository URL argument is provided
@@ -25,15 +25,14 @@ fn main() {
 
         // Run forge install command
         if Command::new("forge")
-        .current_dir(&cache_path)
-        .arg("install")
-        .status()
-        .expect("Failed to run forge install!")
-        .success() 
+            .current_dir(&cache_path)
+            .arg("install")
+            .status()
+            .expect("Failed to run forge install!")
+            .success()
         {
             println!("forge install successful!");
-        } else 
-        {
+        } else {
             println!("forge install failed!");
         }
     }
@@ -47,7 +46,7 @@ fn main() {
         Ok(files) => {
             files_with_path_old = files;
             println!("Old .sol files: {:?}", files_with_path_old);
-        },
+        }
         Err(err) => {
             println!("Error finding old .sol files: {}", err);
             return;
@@ -59,7 +58,7 @@ fn main() {
         Ok(files) => {
             files_with_path_new = files;
             println!("New .sol files: {:?}", files_with_path_new);
-        },
+        }
         Err(err) => {
             println!("Error finding new .sol files: {}", err);
             return;
