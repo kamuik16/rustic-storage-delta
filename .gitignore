@@ -1,4 +1,1 @@
-/target/*
-!/target/debug/
-/target/debug/*
-!target/debug/rustic-storage-delta
+/target
